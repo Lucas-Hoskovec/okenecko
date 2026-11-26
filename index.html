@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171412">
+  <meta name="description" content="Okénečko — votre carnet de chansons personnelles, en grand, à portée de main. Local, privé, hors-ligne.">
+  <title>Okénečko</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="64x64" href="./icons/icon-64.png">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <main id="main">
+
+    <!-- ============ ACCUEIL ============ -->
+    <section class="view is-active" id="view-library" aria-label="Accueil">
+      <div class="view-inner">
+        <div class="hero">
+          <h1>Vos chansons,<br><span class="grad-text">à portée de main.</span></h1>
+          <p class="muted">Votre carnet de paroles. Rien que pour vous.</p>
+        </div>
+
+        <div class="search-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Rechercher une chanson…" aria-label="Rechercher une chanson" autocomplete="off">
+        </div>
+
+        <div class="chips" id="filter-chips" role="group" aria-label="Filtrer les chansons"></div>
+
+        <div class="song-list" id="song-list"></div>
+
+        <div class="empty" id="empty-state" hidden>
+          <img class="empty-icon" src="./icons/icon-64.png" alt="" aria-hidden="true">
+          <h2 id="empty-title">Aucune chanson pour l'instant</h2>
+          <p class="muted" id="empty-text">Appuyez sur le bouton + pour écrire votre première chanson.</p>
+          <button class="btn primary" id="empty-add" type="button">Créer une chanson</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ÉDITEUR ============ -->
+    <section class="view" id="view-editor" aria-label="Éditeur de chanson">
+      <div class="view-inner">
+        <div class="view-head">
+          <button class="icon-btn" id="editor-back" type="button" aria-label="Retour">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          </button>
+          <h2 id="editor-heading">Nouvelle chanson</h2>
+        </div>
+
+        <form id="song-form" novalidate>
+          <div class="field">
+            <label for="f-title">Titre</label>
+            <input id="f-title" type="text" maxlength="120" placeholder="Le titre de la chanson" autocomplete="off" required>
+          </div>
+
+          <div class="field">
+            <label for="f-artist">Artiste <span class="optional">facultatif</span></label>
+            <input id="f-artist" type="text" maxlength="120" placeholder="Qui l'a écrite ?" autocomplete="off">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <label for="f-lyrics">Paroles</label>
+              <button class="dictate-btn" id="dictate-btn" type="button" aria-pressed="false" aria-label="Dicter les paroles avec le micro">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/></svg>
+                <span id="dictate-label">Dicter</span>
+              </button>
+            </div>
+            <textarea id="f-lyrics" rows="12" placeholder="Écrivez vos paroles ici…"></textarea>
+            <p class="dictate-status" id="dictate-status" hidden></p>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn ghost" id="editor-cancel" type="button">Annuler</button>
+            <button class="btn primary" type="submit">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ LECTEUR GRAND ÉCRAN ============ -->
+    <section class="reader" id="view-reader" aria-label="Lecture des paroles" hidden>
+      <div class="reader-top">
+        <button class="reader-icon" id="reader-close" type="button" aria-label="Fermer la lecture">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <div class="reader-heading">
+          <span class="reader-title" id="reader-title"></span>
+          <span class="reader-artist" id="reader-artist"></span>
+        </div>
+        <button class="reader-icon" id="reader-fullscreen" type="button" aria-label="Plein écran">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+        </button>
+      </div>
+
+      <div class="reader-scroll" id="reader-scroll">
+        <pre id="reader-lyrics"></pre>
+        <div class="reader-end">— fin —</div>
+      </div>
+
+      <div class="reader-controls">
+        <div class="control-row">
+          <button class="ctrl" id="speed-down" type="button" aria-label="Ralentir le défilement">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+          </button>
+          <button class="play-btn" id="play-toggle" type="button" aria-label="Démarrer le défilement" aria-pressed="false">
+            <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+            <svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+          </button>
+          <button class="ctrl" id="speed-up" type="button" aria-label="Accélérer le défilement">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div class="progress-row">
+          <span class="speed-label" id="speed-label">×1</span>
+          <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RÉGLAGES ============ -->
+    <section class="view" id="view-settings" aria-label="Réglages">
+      <div class="view-inner">
+        <div class="hero small">
+          <h1>Réglages</h1>
+          <p class="muted">Vos chansons, vos règles.</p>
+        </div>
+
+        <div class="settings-group">
+          <h2>Installer l'application</h2>
+          <p class="hint">Okénečko s'installe comme une vraie appli, sans magasin d'applications.</p>
+          <button class="btn primary wide" id="install-btn" type="button">Installer Okénečko</button>
+          <div class="install-help" id="install-help" hidden>
+            <p><strong>Sur iPhone :</strong> ouvrez cette page dans <strong>Safari</strong>, appuyez sur <strong>Partager</strong> (carré avec une flèche), puis <strong>« Sur l'écran d'accueil »</strong> → <strong>« Ajouter »</strong>.</p>
+            <p><strong>Sur Android :</strong> menu <strong>⋮</strong> de Chrome → <strong>« Installer l'application »</strong>.</p>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h2>Sauvegarde</h2>
+          <p class="hint">Vos chansons restent sur cet appareil. Sauvegardez tout votre carnet ici, ou une seule chanson depuis son menu ⋯. La restauration ajoute les chansons sans rien effacer.</p>
+          <button class="btn ghost wide" id="export-json" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>
+            Sauvegarde du catalogue (JSON)
+          </button>
+          <button class="btn ghost wide spaced" id="import-json" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17V5M7 10l5-5 5 5M4 20h16"/></svg>
+            Restaurer depuis une sauvegarde
+          </button>
+          <button class="btn ghost wide spaced" id="auto-backup-btn" type="button" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h5l2 2h9v11H4V7Z"/></svg>
+            <span id="auto-backup-label">Choisir un dossier de sauvegarde automatique</span>
+          </button>
+          <p class="hint" id="backup-hint" hidden></p>
+        </div>
+
+        <div class="settings-group">
+          <h2>Besoin d'aide ?</h2>
+          <p class="hint">Découvrez toutes les fonctions de l'application en quelques étapes.</p>
+          <button class="btn ghost wide" id="open-tuto" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.5M12 17h.01"/></svg>
+            Voir le guide d'utilisation
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TUTORIEL ============ -->
+    <section class="view" id="view-tuto" aria-label="Guide d'utilisation">
+      <div class="view-inner">
+        <div class="view-head">
+          <button class="icon-btn" id="tuto-back" type="button" aria-label="Retour aux réglages">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          </button>
+          <h2>Guide d'utilisation</h2>
+        </div>
+
+        <div class="tuto-list">
+          <div class="tuto-item"><span class="tuto-num">1</span><div>
+            <h3>Écrire une chanson</h3>
+            <p>Appuyez sur le bouton <strong>+</strong>, donnez un titre, ajoutez un artiste si vous voulez, écrivez vos paroles — ou dictez-les avec le micro — puis <strong>Enregistrer</strong>.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">2</span><div>
+            <h3>Lire les paroles</h3>
+            <p>Touchez une chanson : elle s'ouvre en grand, en blanc sur fond noir, pour être lue facilement.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">3</span><div>
+            <h3>Faire défiler</h3>
+            <p>Appuyez sur <strong>Lecture</strong> pour lancer le défilement. Les boutons <strong>−</strong> et <strong>+</strong> règlent la vitesse. La barre montre la progression. Le défilement s'arrête à la fin.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">4</span><div>
+            <h3>Plein écran</h3>
+            <p>Le bouton en haut à droite agrandit la lecture. Le bouton <strong>×</strong> la ferme.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">5</span><div>
+            <h3>Rechercher</h3>
+            <p>Utilisez la barre de recherche de l'accueil pour trouver une chanson par son titre, son artiste ou une parole.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">6</span><div>
+            <h3>Favoris et épinglage</h3>
+            <p>Le filtre <strong>★ Favoris</strong> affiche vos chansons préférées. Dans le menu <strong>⋯</strong>, vous pouvez ajouter une chanson aux favoris ou l'épingler en haut de la liste.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">7</span><div>
+            <h3>Le menu ⋯</h3>
+            <p>Il contient : épingler, favori, exporter en PDF, exporter en texte, sauvegarder cette chanson en JSON et supprimer la chanson.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">8</span><div>
+            <h3>Sauvegarde</h3>
+            <p>Créez une copie JSON depuis le menu <strong>⋯</strong> et gardez-la quelque part. Pour retrouver vos chansons sur un autre téléphone, utilisez <strong>Restaurer depuis une sauvegarde</strong> dans les réglages.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">9</span><div>
+            <h3>Installer l'application</h3>
+            <p>Dans les réglages, <strong>Installer Okénečko</strong> ajoute l'appli à votre écran d'accueil. Sur iPhone, utilisez le bouton Partager de Safari.</p>
+          </div></div>
+
+          <div class="tuto-item"><span class="tuto-num">10</span><div>
+            <h3>Dicter les paroles</h3>
+            <p>Dans l'éditeur, appuyez sur <strong>Dicter</strong> et parlez : vos paroles s'écrivent en direct dans le champ. Appuyez sur <strong>Arrêter</strong> pour terminer. Le micro doit être autorisé et la page ouverte en HTTPS ; la dictée vocale peut nécessiter une connexion Internet.</p>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav" id="bottom-nav" aria-label="Navigation principale">
+    <button class="nav-btn is-active" data-nav="library" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/></svg>
+      <span>Accueil</span>
+    </button>
+    <button class="nav-btn" data-nav="settings" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3v-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.4 7 7.2 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3h4v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4h-.2a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+      <span>Réglages</span>
+    </button>
+  </nav>
+
+  <button class="fab" id="fab" type="button" aria-label="Ajouter une chanson">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <div class="modal" id="import-modal" hidden>
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="import-title">
+      <h2 id="import-title">Restaurer une sauvegarde</h2>
+      <p class="muted" id="import-summary"></p>
+      <p class="hint">Les chansons de la sauvegarde seront ajoutées à votre carnet. Une chanson déjà présente ne sera remplacée que si la sauvegarde est plus récente. Rien n'est effacé.</p>
+      <div class="modal-actions">
+        <button class="btn ghost" id="import-cancel" type="button">Annuler</button>
+        <button class="btn primary" id="import-merge" type="button">Restaurer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu ⋯ global : positionné à l'écran, toujours entre l'en-tête et la barre d'onglets -->
+  <div class="song-menu" id="song-menu" role="menu" hidden></div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <div class="print-sheet" id="print-sheet" aria-hidden="true"></div>
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

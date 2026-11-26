@@ -1,0 +1,27 @@
+{
+  "name": "Okénečko — carnet de chansons",
+  "short_name": "Okénečko",
+  "description": "Votre carnet de chansons personnelles : écrivez vos paroles, lisez-les en grand et laissez-les défiler à votre rythme. Local, privé, hors-ligne.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#171412",
+  "theme_color": "#171412",
+  "categories": ["lifestyle", "productivity", "music"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
